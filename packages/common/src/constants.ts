@@ -489,6 +489,7 @@ export const TOOL_TYPE = {
   ellipse: "ellipse",
   arrow: "arrow",
   line: "line",
+  ruler: "ruler",
   freedraw: "freedraw",
   text: "text",
   image: "image",

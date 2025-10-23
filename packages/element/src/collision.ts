@@ -257,6 +257,7 @@ export const intersectElementWithLineSegment = (
     case "line":
     case "freedraw":
     case "arrow":
+    case "ruler":
       return intersectLinearOrFreeDrawWithLineSegment(element, line, onlyFirst);
   }
 };

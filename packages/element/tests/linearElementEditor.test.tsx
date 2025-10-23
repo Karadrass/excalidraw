@@ -101,7 +101,7 @@ describe("Test Linear Elements", () => {
     type: ExcalidrawLinearElement["type"],
     roundness: ExcalidrawElement["roundness"] = null,
     roughness: ExcalidrawLinearElement["roughness"] = 0,
-  ) => {
+  ): ExcalidrawLinearElement => {
     //dragging line from midpoint
     const p3 = [midpoint[0] + delta - p1[0], midpoint[1] + delta - p1[1]];
     const line = API.createElement({
@@ -117,8 +117,8 @@ describe("Test Linear Elements", () => {
         pointFrom(p2[0] - p1[0], p2[1] - p1[1]),
       ],
       roundness,
-    });
-    h.app.scene.mutateElement(line, { points: line.points });
+    }) as ExcalidrawLinearElement;
+    h.app.scene.mutateElement(line, { points: line.points } as any);
     API.setElements([line]);
     mouse.clickAt(p1[0], p1[1]);
     return line;

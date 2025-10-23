@@ -146,6 +146,7 @@ export type ToolType =
   | "ellipse"
   | "arrow"
   | "line"
+  | "ruler"
   | "freedraw"
   | "text"
   | "image"

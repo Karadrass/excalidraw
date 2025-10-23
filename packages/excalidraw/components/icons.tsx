@@ -371,6 +371,15 @@ export const LineIcon = createIcon(
   modifiedTablerIconProps,
 );
 
+export const RulerIcon = createIcon(
+  <polygon
+    points="16.7,0.8 16.7,2.9 2.9,2.9 2.9,0.8 0.8,0.8 0.8,7.3 2.9,7.3 2.9,5 16.7,5 16.7,7.3 18.8,7.3 18.8,0.8"
+    fill="currentColor"
+    stroke="none"
+  />,
+  { width: 24, height: 8, viewBox: "-3 0 24 8", fill: "currentColor", stroke: "none" },
+);
+
 export const PenModeIcon = createIcon(
   <g strokeWidth="1.25">
     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>

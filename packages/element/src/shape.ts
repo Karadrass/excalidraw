@@ -225,6 +225,7 @@ export const generateRoughOptions = (
       return options;
     }
     case "line":
+    case "ruler":
     case "freedraw": {
       if (isPathALoop(element.points)) {
         options.fillStyle = element.fillStyle;
@@ -447,6 +448,7 @@ export const generateLinearCollisionShape = (
 
   switch (element.type) {
     case "line":
+    case "ruler":
     case "arrow": {
       // points array can be empty in the beginning, so it is important to add
       // initial position to it
@@ -718,6 +720,7 @@ const generateElementShape = (
       return shape;
     }
     case "line":
+    case "ruler":
     case "arrow": {
       let shape: ElementShapes[typeof element.type];
       const options = generateRoughOptions(element);
@@ -924,7 +927,8 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
     case "selection":
       return getPolygonShape(element);
     case "arrow":
-    case "line": {
+    case "line":
+    case "ruler": {
       const roughShape =
         ShapeCache.get(element)?.[0] ??
         ShapeCache.generateElementShape(element, null)[0];

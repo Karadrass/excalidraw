@@ -152,6 +152,7 @@ export type ElementShapes = {
   freedraw: Drawable | null;
   arrow: Drawable[];
   line: Drawable[];
+  ruler: Drawable[];
   text: null;
   image: null;
   frame: null;

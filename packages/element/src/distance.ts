@@ -47,6 +47,7 @@ export const distanceToElement = (
       return distanceToEllipseElement(element, elementsMap, p);
     case "line":
     case "arrow":
+    case "ruler":
     case "freedraw":
       return distanceToLinearOrFreeDraElement(element, p);
   }
