@@ -27,6 +27,8 @@ import { wrapText } from "./textWrapping";
 import {
   isBoundToContainer,
   isArrowElement,
+  isLinearElement,
+  isRulerElement,
   isTextElement,
 } from "./typeChecks";
 
@@ -157,7 +159,17 @@ export const handleBindTextResize = (
       return;
     }
 
+    // For ruler elements, recalculate the measurement
     let text = textElement.text;
+    if (isRulerElement(container) && container.points.length >= 2) {
+      const start = container.points[0];
+      const end = container.points[container.points.length - 1];
+      const dx = end[0] - start[0];
+      const dy = end[1] - start[1];
+      const distanceInPixels = Math.sqrt(dx * dx + dy * dy);
+      const distanceInInches = distanceInPixels / 71;
+      text = distanceInInches.toFixed(1) + '"';
+    }
     let nextHeight = textElement.height;
     let nextWidth = textElement.width;
     const maxWidth = getBoundTextMaxWidth(container, textElement);
@@ -168,11 +180,15 @@ export const handleBindTextResize = (
       (transformHandleType !== "n" && transformHandleType !== "s")
     ) {
       if (text) {
-        text = wrapText(
-          textElement.originalText,
-          getFontString(textElement),
-          maxWidth,
-        );
+        // For rulers, don't wrap text - it should always stay on one line (like arrows)
+        if (!isRulerElement(container)) {
+          text = wrapText(
+            textElement.originalText,
+            getFontString(textElement),
+            maxWidth,
+          );
+        }
+        // For rulers, text is already calculated and should not be wrapped
       }
       const metrics = measureText(
         text,
@@ -204,18 +220,23 @@ export const handleBindTextResize = (
       });
     }
 
-    scene.mutateElement(textElement, {
+    // For ruler elements, also update originalText so the measurement persists
+    const textUpdate: any = {
       text,
       width: nextWidth,
       height: nextHeight,
-    });
-
-    if (!isArrowElement(container)) {
-      scene.mutateElement(
-        textElement,
-        computeBoundTextPosition(container, textElement, elementsMap),
-      );
+    };
+    if (isRulerElement(container)) {
+      textUpdate.originalText = text;
     }
+
+    scene.mutateElement(textElement, textUpdate);
+
+    // Always recalculate position for bound text
+    scene.mutateElement(
+      textElement,
+      computeBoundTextPosition(container, textElement, elementsMap),
+    );
   }
 };
 
@@ -224,7 +245,7 @@ export const computeBoundTextPosition = (
   boundTextElement: ExcalidrawTextElementWithContainer,
   elementsMap: ElementsMap,
 ) => {
-  if (isArrowElement(container)) {
+  if (isLinearElement(container)) {
     return LinearElementEditor.getBoundTextElementPosition(
       container,
       boundTextElement,

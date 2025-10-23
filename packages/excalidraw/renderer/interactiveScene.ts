@@ -30,6 +30,7 @@ import {
   isImageElement,
   isLinearElement,
   isLineElement,
+  isRulerElement,
   isTextElement,
 } from "@excalidraw/element";
 
@@ -527,29 +528,32 @@ const renderLinearPointHandles = (
       }
     });
   } else {
-    const midPoints = LinearElementEditor.getEditorMidPoints(
-      element,
-      elementsMap,
-      appState,
-    ).filter(
-      (midPoint, idx, midPoints): midPoint is GlobalPoint =>
-        midPoint !== null &&
-        !(isElbowArrow(element) && (idx === 0 || idx === midPoints.length - 1)),
-    );
+    // Don't render midpoints for ruler elements
+    if (!isRulerElement(element)) {
+      const midPoints = LinearElementEditor.getEditorMidPoints(
+        element,
+        elementsMap,
+        appState,
+      ).filter(
+        (midPoint, idx, midPoints): midPoint is GlobalPoint =>
+          midPoint !== null &&
+          !(isElbowArrow(element) && (idx === 0 || idx === midPoints.length - 1)),
+      );
 
-    midPoints.forEach((segmentMidPoint) => {
-      if (appState.selectedLinearElement?.isEditing || points.length === 2) {
-        renderSingleLinearPoint(
-          context,
-          appState,
-          segmentMidPoint,
-          POINT_HANDLE_SIZE / 2,
-          false,
-          true,
-          false,
-        );
-      }
-    });
+      midPoints.forEach((segmentMidPoint) => {
+        if (appState.selectedLinearElement?.isEditing || points.length === 2) {
+          renderSingleLinearPoint(
+            context,
+            appState,
+            segmentMidPoint,
+            POINT_HANDLE_SIZE / 2,
+            false,
+            true,
+            false,
+          );
+        }
+      });
+    }
   }
 
   context.restore();

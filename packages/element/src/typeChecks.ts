@@ -28,6 +28,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   ExcalidrawLineElement,
+  ExcalidrawRulerElement,
   PointBinding,
   FixedPointBinding,
   ExcalidrawFlowchartNodeElement,
@@ -117,6 +118,12 @@ export const isLineElement = (
   return element != null && element.type === "line";
 };
 
+export const isRulerElement = (
+  element?: ExcalidrawElement | null,
+): element is ExcalidrawRulerElement => {
+  return element != null && element.type === "ruler";
+};
+
 export const isArrowElement = (
   element?: ExcalidrawElement | null,
 ): element is ExcalidrawArrowElement => {
@@ -156,7 +163,7 @@ export const isLinearElementType = (
   elementType: ElementOrToolType,
 ): boolean => {
   return (
-    elementType === "arrow" || elementType === "line" // || elementType === "freedraw"
+    elementType === "arrow" || elementType === "line" || elementType === "ruler" // || elementType === "freedraw"
   );
 };
 
@@ -261,6 +268,7 @@ export const isExcalidrawElement = (
     case "arrow":
     case "freedraw":
     case "line":
+    case "ruler":
     case "frame":
     case "magicframe":
     case "image":

@@ -285,10 +285,10 @@ const generateElementCanvas = (
   const boundTextCanvas = document.createElement("canvas");
   const boundTextCanvasContext = boundTextCanvas.getContext("2d")!;
 
-  if (isArrowElement(element) && boundTextElement) {
+  if (isLinearElement(element) && boundTextElement) {
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
-    // Take max dimensions of arrow canvas so that when canvas is rotated
-    // the arrow doesn't get clipped
+    // Take max dimensions of linear element canvas so that when canvas is rotated
+    // the element doesn't get clipped
     const maxDim = Math.max(distance(x1, x2), distance(y1, y2));
     boundTextCanvas.width =
       maxDim * window.devicePixelRatio * scale + padding * scale * 10;
@@ -433,6 +433,75 @@ const drawElementOnCanvas = (
       ShapeCache.get(element)!.forEach((shape) => {
         rc.draw(shape);
       });
+      break;
+    }
+    case "ruler": {
+      context.lineJoin = "round";
+      context.lineCap = "round";
+
+      ShapeCache.get(element)!.forEach((shape) => {
+        rc.draw(shape);
+      });
+
+      // Draw measurement text during creation (before bound text is created)
+      // Bound text will be rendered automatically by the existing system once created
+      const hasBoundText = element.boundElements?.some(
+        (el) => el.type === "text",
+      );
+
+      if (!hasBoundText && element.points && element.points.length >= 2) {
+        const start = element.points[0];
+        const end = element.points[element.points.length - 1];
+
+        // Calculate distance in pixels
+        const dx = end[0] - start[0];
+        const dy = end[1] - start[1];
+        const distanceInPixels = Math.sqrt(dx * dx + dy * dy);
+
+        // Convert to inches (71 pixels = 1 inch)
+        const distanceInInches = distanceInPixels / 71;
+        const measurement = distanceInInches.toFixed(1) + '"';
+
+        // Calculate midpoint for text placement (horizontal)
+        const midX = (start[0] + end[0]) / 2;
+        const midY = (start[1] + end[1]) / 2;
+
+        // Use Excalifont with medium size (20px)
+        const fontSize = 20;
+        const fontFamily = 1; // 1 is Excalifont
+
+        // Set text style
+        context.save();
+        context.font = getFontString({
+          fontSize,
+          fontFamily,
+        } as any);
+
+        // Measure text to know the size of the area to clear
+        const textMetrics = context.measureText(measurement);
+        const textWidth = textMetrics.width;
+        const textHeight = fontSize;
+        const padding = 4; // Same padding as BOUND_TEXT_PADDING
+
+        // Position text at center (textBaseline=middle handles vertical centering)
+        context.translate(midX, midY);
+
+        // Clear the area under the text (mask the line)
+        context.clearRect(
+          -textWidth / 2 - padding,
+          -textHeight / 2 - padding,
+          textWidth + padding * 2,
+          textHeight + padding * 2,
+        );
+
+        // Draw text
+        context.fillStyle = element.strokeColor;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(measurement, 0, 0);
+
+        context.restore();
+      }
       break;
     }
     case "freedraw": {
@@ -630,7 +699,7 @@ const drawElementFromCanvas = (
 
   const boundTextElement = getBoundTextElement(element, allElementsMap);
 
-  if (isArrowElement(element) && boundTextElement) {
+  if (isLinearElement(element) && boundTextElement) {
     const offsetX =
       (elementWithCanvas.boundTextCanvas.width -
         elementWithCanvas.canvas!.width) /
@@ -831,6 +900,7 @@ export const renderElement = (
     case "diamond":
     case "ellipse":
     case "line":
+    case "ruler":
     case "arrow":
     case "image":
     case "text":
@@ -867,13 +937,13 @@ export const renderElement = (
         }
         const boundTextElement = getBoundTextElement(element, elementsMap);
 
-        if (isArrowElement(element) && boundTextElement) {
+        if (isLinearElement(element) && boundTextElement) {
           const tempCanvas = document.createElement("canvas");
 
           const tempCanvasContext = tempCanvas.getContext("2d")!;
 
-          // Take max dimensions of arrow canvas so that when canvas is rotated
-          // the arrow doesn't get clipped
+          // Take max dimensions of linear element canvas so that when canvas is rotated
+          // the element doesn't get clipped
           const maxDim = Math.max(distance(x1, x2), distance(y1, y2));
           const padding = getCanvasPadding(element);
           tempCanvas.width =

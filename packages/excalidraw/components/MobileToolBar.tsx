@@ -26,6 +26,7 @@ import {
   DiamondIcon,
   EllipseIcon,
   LineIcon,
+  RulerIcon,
   TextIcon,
   ImageIcon,
   frameToolIcon,
@@ -79,6 +80,7 @@ const LINEAR_ELEMENT_TOOLS = [
     title: capitalizeString(t("toolBar.arrow")),
   },
   { type: "line", icon: LineIcon, title: capitalizeString(t("toolBar.line")) },
+  { type: "ruler", icon: RulerIcon, title: capitalizeString(t("toolBar.ruler")) },
 ] as const;
 
 type MobileToolBarProps = {

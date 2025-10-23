@@ -7,6 +7,7 @@ import {
   EllipseIcon,
   ArrowIcon,
   LineIcon,
+  RulerIcon,
   FreedrawIcon,
   TextIcon,
   ImageIcon,
@@ -56,6 +57,13 @@ export const SHAPES = [
     value: "line",
     key: KEYS.L,
     numericKey: KEYS["6"],
+    fillable: true,
+  },
+  {
+    icon: RulerIcon,
+    value: "ruler",
+    key: null,
+    numericKey: null,
     fillable: true,
   },
   {

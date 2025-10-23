@@ -9,6 +9,8 @@ import {
   isValidPolygon,
   LinearElementEditor,
   newElementWith,
+  newTextElement,
+  getBoundTextElementPosition,
 } from "@excalidraw/element";
 
 import {
@@ -16,6 +18,7 @@ import {
   isFreeDrawElement,
   isLinearElement,
   isLineElement,
+  isRulerElement,
 } from "@excalidraw/element";
 
 import {
@@ -23,6 +26,8 @@ import {
   arrayToMap,
   tupleToCoors,
   updateActiveTool,
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
 } from "@excalidraw/common";
 import { isPathALoop } from "@excalidraw/element";
 
@@ -226,6 +231,75 @@ export const actionFinalize = register({
           scene.mutateElement(element, {
             polygon: false,
           });
+        }
+
+        // Create bound text for ruler element
+        if (isRulerElement(element) && element.points.length >= 2) {
+          // Check if ruler already has bound text to avoid duplicates
+          const hasBoundText = element.boundElements?.some(
+            (el) => el.type === "text",
+          );
+
+          if (!hasBoundText) {
+            // Calculate distance in pixels
+            const start = element.points[0];
+            const end = element.points[element.points.length - 1];
+            const dx = end[0] - start[0];
+            const dy = end[1] - start[1];
+            const distanceInPixels = Math.sqrt(dx * dx + dy * dy);
+
+            // Convert to inches (71 pixels = 1 inch)
+            const distanceInInches = distanceInPixels / 71;
+            const measurement = distanceInInches.toFixed(1) + '"';
+
+            // Create text element with temporary position (0,0)
+            // The position will be recalculated by redrawTextBoundingBox
+            const textElement = newTextElement({
+              x: 0,
+              y: 0,
+              text: measurement,
+              fontSize: appState.currentItemFontSize || DEFAULT_FONT_SIZE,
+              fontFamily: appState.currentItemFontFamily || DEFAULT_FONT_FAMILY,
+              strokeColor: element.strokeColor,
+              backgroundColor: appState.viewBackgroundColor, // Use canvas background color to mask the line
+              fillStyle: "solid",
+              strokeWidth: 0, // No stroke for the text background
+              strokeStyle: "solid",
+              roughness: 0,
+              opacity: 100,
+              containerId: element.id,
+              verticalAlign: "middle",
+              textAlign: "center",
+            });
+
+            // Update ruler element to reference the bound text FIRST
+            scene.mutateElement(element, {
+              boundElements: [
+                ...(element.boundElements || []),
+                { id: textElement.id, type: "text" },
+              ],
+            });
+
+            // Add text element to scene
+            scene.insertElement(textElement);
+
+            // Calculate the correct position using LinearElementEditor
+            const elementsMap = scene.getNonDeletedElementsMap();
+            const position = LinearElementEditor.getBoundTextElementPosition(
+              element,
+              textElement as any,
+              elementsMap,
+            );
+
+            // Update text element with the correct position
+            scene.mutateElement(textElement, {
+              x: position.x,
+              y: position.y,
+            });
+
+            // Get updated elements from scene
+            newElements = scene.getNonDeletedElements();
+          }
         }
 
         if (

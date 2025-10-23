@@ -333,6 +333,7 @@ export class API {
         });
         break;
       case "line":
+      case "ruler":
         element = newLinearElement({
           ...base,
           width,

@@ -208,6 +208,7 @@ export type ExcalidrawElement =
   | ExcalidrawTextElement
   | ExcalidrawLinearElement
   | ExcalidrawArrowElement
+  | ExcalidrawRulerElement
   | ExcalidrawFreeDrawElement
   | ExcalidrawImageElement
   | ExcalidrawFrameElement
@@ -271,7 +272,8 @@ export type ExcalidrawTextContainer =
   | ExcalidrawRectangleElement
   | ExcalidrawDiamondElement
   | ExcalidrawEllipseElement
-  | ExcalidrawArrowElement;
+  | ExcalidrawArrowElement
+  | ExcalidrawRulerElement;
 
 export type ExcalidrawTextElementWithContainer = {
   containerId: ExcalidrawTextContainer["id"];
@@ -320,7 +322,7 @@ export type Arrowhead =
 
 export type ExcalidrawLinearElement = _ExcalidrawElementBase &
   Readonly<{
-    type: "line" | "arrow";
+    type: "line" | "arrow" | "ruler";
     points: readonly LocalPoint[];
     lastCommittedPoint: LocalPoint | null;
     startBinding: PointBinding | null;
@@ -345,6 +347,11 @@ export type ExcalidrawArrowElement = ExcalidrawLinearElement &
   Readonly<{
     type: "arrow";
     elbowed: boolean;
+  }>;
+
+export type ExcalidrawRulerElement = ExcalidrawLinearElement &
+  Readonly<{
+    type: "ruler";
   }>;
 
 export type ExcalidrawElbowArrowElement = Merge<

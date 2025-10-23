@@ -94,6 +94,7 @@ export const AllowedExcalidrawActiveTools: Record<
   diamond: true,
   ellipse: true,
   line: true,
+  ruler: true,
   image: true,
   arrow: true,
   freedraw: true,
