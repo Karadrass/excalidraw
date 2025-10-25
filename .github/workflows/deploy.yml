@@ -1,0 +1,78 @@
+name: Deploy to OVH
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build production
+        run: yarn build
+        env:
+          NODE_ENV: production
+
+      - name: Prepare deployment files
+        run: |
+          cd excalidraw-app/build
+          # Create list of files to deploy
+          find . -type f > ../../deploy-files.txt
+
+      - name: Test SFTP connection
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USERNAME }}
+          password: ${{ secrets.OVH_PASSWORD }}
+          script: |
+            echo "SFTP connection successful"
+            mkdir -p ~/excalidraw
+            echo "Directory created/verified"
+
+      - name: Deploy to OVH via SFTP
+        run: |
+          # Install lftp for reliable SFTP transfer
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+          # Create SFTP batch script
+          cat > sftp-commands.txt << 'EOF'
+          set sftp:auto-confirm yes
+          set ssl:verify-certificate no
+          mirror --reverse --delete --verbose --exclude .git/ --exclude .github/ --exclude node_modules/ --exclude .env excalidraw-app/build /excalidraw
+          bye
+          EOF
+
+          # Execute SFTP transfer
+          lftp -u ${{ secrets.OVH_USERNAME }},${{ secrets.OVH_PASSWORD }} sftp://${{ secrets.OVH_HOST }} < sftp-commands.txt
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USERNAME }}
+          password: ${{ secrets.OVH_PASSWORD }}
+          script: |
+            echo "Checking deployed files..."
+            ls -lah ~/excalidraw/ | head -20
+            echo "Deployment complete!"
+
+      - name: Deployment status
+        if: success()
+        run: echo "✅ Successfully deployed Excalidraw to OVH!"
