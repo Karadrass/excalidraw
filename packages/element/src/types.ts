@@ -79,6 +79,13 @@ type _ExcalidrawElementBase = Readonly<{
   link: string | null;
   locked: boolean;
   customData?: Record<string, any>;
+  /** Custom rotation center point relative to element's top-left corner.
+      If null, rotation uses the default center (cx, cy).
+      Format: [x, y] where x and y are relative to element's x and y */
+  customRotationCenter?: LocalPoint | null;
+  /** Custom rotation center for group rotations, stored as offset from group center.
+      Format: [x, y] where x and y are relative to the group's center point */
+  groupCustomRotationCenter?: LocalPoint | null;
 }>;
 
 export type ExcalidrawSelectionElement = _ExcalidrawElementBase & {

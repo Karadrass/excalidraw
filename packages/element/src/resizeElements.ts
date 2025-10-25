@@ -89,6 +89,7 @@ export const transformElements = (
   pointerY: number,
   centerX: number,
   centerY: number,
+  initialRotationAngle: number = 0,
 ): boolean => {
   const elementsMap = scene.getNonDeletedElementsMap();
   if (selectedElements.length === 1) {
@@ -97,10 +98,12 @@ export const transformElements = (
       if (!isElbowArrow(element)) {
         rotateSingleElement(
           element,
+          originalElements,
           scene,
           pointerX,
           pointerY,
           shouldRotateWithDiscreteAngle,
+          initialRotationAngle,
         );
         updateBoundElements(element, scene);
       }
@@ -153,6 +156,7 @@ export const transformElements = (
         shouldRotateWithDiscreteAngle,
         centerX,
         centerY,
+        initialRotationAngle,
       );
       return true;
     } else if (transformHandleType) {
@@ -195,32 +199,106 @@ export const transformElements = (
 
 const rotateSingleElement = (
   element: NonDeletedExcalidrawElement,
+  originalElements: PointerDownState["originalElements"],
   scene: Scene,
   pointerX: number,
   pointerY: number,
   shouldRotateWithDiscreteAngle: boolean,
+  initialRotationAngle: number = 0,
 ) => {
-  const [x1, y1, x2, y2] = getElementAbsoluteCoords(
-    element,
-    scene.getNonDeletedElementsMap(),
-  );
-  const cx = (x1 + x2) / 2;
-  const cy = (y1 + y2) / 2;
+  const elementsMap = scene.getNonDeletedElementsMap();
+  const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+
+  // Get the original element to track rotation delta
+  const origElement = originalElements.get(element.id);
+  const origAngle = origElement?.angle ?? element.angle;
+
+  // Calculate rotation center
+  let cx = (x1 + x2) / 2;
+  let cy = (y1 + y2) / 2;
+
+  if (element.customRotationCenter) {
+    const [relX, relY] = element.customRotationCenter;
+    cx = element.x + relX;
+    cy = element.y + relY;
+
+    // Account for current element rotation
+    if (element.angle !== 0) {
+      const rotated = pointRotateRads(
+        pointFrom(cx, cy),
+        pointFrom(element.x + element.width / 2, element.y + element.height / 2),
+        element.angle,
+      );
+      cx = rotated[0];
+      cy = rotated[1];
+    }
+  }
+
   let angle: Radians;
   if (isFrameLikeElement(element)) {
     angle = 0 as Radians;
   } else {
-    angle = ((5 * Math.PI) / 2 +
-      Math.atan2(pointerY - cy, pointerX - cx)) as Radians;
+    // Calculate current angle from pointer to rotation center
+    const currentPointerAngle = Math.atan2(pointerY - cy, pointerX - cx);
+
+    // Calculate angle delta from initial pointer position
+    let angleDelta = currentPointerAngle - initialRotationAngle;
+
+    // Add the delta to the original element angle
+    angle = (origAngle + angleDelta) as Radians;
+
     if (shouldRotateWithDiscreteAngle) {
       angle = (angle + SHIFT_LOCKING_ANGLE / 2) as Radians;
       angle = (angle - (angle % SHIFT_LOCKING_ANGLE)) as Radians;
     }
     angle = normalizeRadians(angle as Radians);
   }
+
+  // If using custom rotation center, also update element position to orbit around it
+  let updates: {
+    angle: Radians;
+    x?: number;
+    y?: number;
+  } = { angle };
+
+  if (element.customRotationCenter && !isFrameLikeElement(element) && origElement) {
+    const angleDelta = (angle - origAngle) as Radians;
+
+    // Get the rotation center in absolute coordinates (using original element state)
+    const [relX, relY] = element.customRotationCenter;
+    let rotCenterX = origElement.x + relX;
+    let rotCenterY = origElement.y + relY;
+
+    // If original element had rotation, account for it
+    if (origAngle !== 0) {
+      const rotated = pointRotateRads(
+        pointFrom(rotCenterX, rotCenterY),
+        pointFrom(origElement.x + origElement.width / 2, origElement.y + origElement.height / 2),
+        origAngle,
+      );
+      rotCenterX = rotated[0];
+      rotCenterY = rotated[1];
+    }
+
+    // Get original element center
+    const origCenterX = origElement.x + origElement.width / 2;
+    const origCenterY = origElement.y + origElement.height / 2;
+
+    // Rotate element center around custom rotation center
+    const [rotatedCenterX, rotatedCenterY] = pointRotateRads(
+      pointFrom(origCenterX, origCenterY),
+      pointFrom(rotCenterX, rotCenterY),
+      angleDelta,
+    );
+
+    // Calculate new element position
+    updates.x = rotatedCenterX - element.width / 2;
+    updates.y = rotatedCenterY - element.height / 2;
+  }
+
   const boundTextElementId = getBoundTextElementId(element);
 
-  scene.mutateElement(element, { angle });
+  scene.mutateElement(element, updates);
   if (boundTextElementId) {
     const textElement =
       scene.getElement<ExcalidrawTextElementWithContainer>(boundTextElementId);
@@ -385,13 +463,21 @@ const rotateMultipleElements = (
   shouldRotateWithDiscreteAngle: boolean,
   centerX: number,
   centerY: number,
+  initialRotationAngle: number = 0,
 ) => {
   const elementsMap = scene.getNonDeletedElementsMap();
-  let centerAngle =
-    (5 * Math.PI) / 2 + Math.atan2(pointerY - centerY, pointerX - centerX);
+
+  // Calculate the center angle using the same formula as original Excalidraw
+  // but adapted to use initialRotationAngle to avoid the initial jump
+  const currentPointerAngle = Math.atan2(pointerY - centerY, pointerX - centerX);
+  const angleDelta = currentPointerAngle - initialRotationAngle;
+
+  // This is the absolute angle that would have been calculated in the original code
+  let centerAngle = ((5 * Math.PI) / 2 + currentPointerAngle) as Radians;
+
   if (shouldRotateWithDiscreteAngle) {
-    centerAngle += SHIFT_LOCKING_ANGLE / 2;
-    centerAngle -= centerAngle % SHIFT_LOCKING_ANGLE;
+    centerAngle = (centerAngle + SHIFT_LOCKING_ANGLE / 2) as Radians;
+    centerAngle = (centerAngle - (centerAngle % SHIFT_LOCKING_ANGLE)) as Radians;
   }
 
   for (const element of elements) {
@@ -401,10 +487,15 @@ const rotateMultipleElements = (
       const cy = (y1 + y2) / 2;
       const origAngle =
         originalElements.get(element.id)?.angle ?? element.angle;
+
+      // Use the original Excalidraw formula but with delta adjustment
+      const newAngle = normalizeRadians((origAngle + angleDelta) as Radians);
+
+      // Rotate element center around the rotation center using original formula
       const [rotatedCX, rotatedCY] = pointRotateRads(
         pointFrom(cx, cy),
         pointFrom(centerX, centerY),
-        (centerAngle + origAngle - element.angle) as Radians,
+        (angleDelta + origAngle - element.angle) as Radians,
       );
 
       const updates = isElbowArrow(element)
@@ -415,7 +506,7 @@ const rotateMultipleElements = (
         : {
             x: element.x + (rotatedCX - cx),
             y: element.y + (rotatedCY - cy),
-            angle: normalizeRadians((centerAngle + origAngle) as Radians),
+            angle: newAngle,
           };
 
       scene.mutateElement(element, updates);
@@ -435,7 +526,7 @@ const rotateMultipleElements = (
         scene.mutateElement(boundText, {
           x,
           y,
-          angle: normalizeRadians((centerAngle + origAngle) as Radians),
+          angle: newAngle,
         });
       }
     }

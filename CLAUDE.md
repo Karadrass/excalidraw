@@ -208,6 +208,122 @@ The Ruler tool is a specialized linear element for measuring distances in inches
 
 **Future Enhancement:** When curved rulers are implemented, remove the `if (!isRulerElement(element))` condition in interactiveScene.ts line 532 to re-enable the midpoint handle for curving
 
+#### Custom Rotation Center (Pivot Point) Implementation
+The Custom Rotation Center feature allows users to reposition the rotation pivot point of both individual elements and groups, with magnetization to corners and center via Ctrl key.
+
+**Key Features:**
+- Draggable rotation center handle displayed as white crosshair at element/group center
+- Ctrl+drag snaps to element corners and center (20px threshold)
+- Elements/groups rotate and orbit around the custom pivot point
+- Works with rotated elements (coordinate transformation applied)
+- Fully functional for both individual elements and grouped selections
+- Smart corner detection: calculates actual element corners even after rotation
+
+**Implementation Details:**
+
+**Core Architecture:**
+- **Single Element Property**: `customRotationCenter?: LocalPoint | null` in `packages/element/src/types.ts`
+  - Stored as coordinates relative to element's (x, y) origin
+  - Optional to avoid breaking existing element creation code
+  - `null` or `undefined` uses default center
+- **Group Element Property**: `groupCustomRotationCenter?: LocalPoint | null` in `packages/element/src/types.ts`
+  - Stored as offset from group center point [relativeX, relativeY]
+  - Applied to all elements in a group
+  - Persists across deselection/reselection cycles
+- **State Management**:
+  - `isDraggingRotationCenter: boolean` in AppState for drag tracking
+  - `groupRotationCenter: { x: number; y: number } | null` in AppState for temporary group pivot position
+
+**Handle Detection:**
+- **Single Element**: `isPointerOnRotationCenterHandle()` in `packages/element/src/resizeTest.ts` (lines 293-338)
+  - Distance-based hit testing with 2x handle size tolerance
+  - Accounts for element rotation using `pointRotateRads`
+  - Returns true if pointer within handle area
+- **Group**: `isPointerOnGroupRotationCenterHandle()` in `packages/element/src/resizeTest.ts` (lines 343-368)
+  - Uses group common bounds to determine default center
+  - Accepts optional `customRotationCenter` parameter for stored pivot position
+  - Distance-based hit testing with 2x handle size tolerance
+
+**Visual Rendering:**
+- **Single Element**: `renderRotationCenterHandle()` in `packages/excalidraw/renderer/interactiveScene.ts` (lines 606-663)
+  - Renders white filled circle with crosshair (horizontal + vertical lines)
+  - Handle size: 8px / zoom, crosshair: 1.5x handle size
+  - No manual translation needed (parent context already translated)
+  - Called automatically when single element selected (line 1110)
+- **Group**: `renderGroupRotationCenterHandle()` in `packages/excalidraw/renderer/interactiveScene.ts` (lines 665-702)
+  - Calculates group center using `getCommonBounds()`
+  - Uses stored `groupCustomRotationCenter` from element data or temporary state
+  - Renders same visual style as single element handle
+  - Called automatically when multiple elements selected (line 1221-1227)
+
+**Drag & Drop Logic:**
+- **Single Element**: `handleCanvasPointerMove` in `packages/excalidraw/components/App.tsx` (lines 8452-8520)
+  - **Coordinate Transformation**:
+    1. Unrotate pointer position around element center if element.angle !== 0
+    2. Calculate coordinates relative to element origin (x, y)
+    3. Store as LocalPoint relative to element
+  - **Magnetization**: When Ctrl held, snaps to:
+    - 4 corners: (0,0), (width,0), (width,height), (0,height)
+    - Center: (width/2, height/2)
+    - Threshold: 20 pixels
+- **Group**: `handleCanvasPointerMove` in `packages/excalidraw/components/App.tsx` (lines 8602-8659)
+  - Updates `groupRotationCenter` in state with pointer coordinates
+  - **Smart Corner Magnetization**: When Ctrl held (lines 8607-8642):
+    - Calculates actual corners for each element accounting for rotation
+    - Uses rotation matrix: [cos(θ) -sin(θ); sin(θ) cos(θ)]
+    - Snaps to all element corners + group center
+    - Works correctly even after group rotation
+  - **Group Drag Tracking**: Pivot follows group during drag (lines 8872-8908)
+    - Calculates actual offset by comparing group center before/after drag
+    - Accounts for snap/grid/lock-direction adjustments
+  - **Persistence**: On pointer up, stores pivot as relative offset in all elements (lines 9432-9471)
+- **Cleanup**: `isDraggingRotationCenter` reset to false on pointer up
+
+**Rotation Mechanics:**
+- **Single Element**: `rotateSingleElement()` in `packages/element/src/resizeElements.ts` (lines 197-290)
+  - **Modified signature**: Added `originalElements` parameter to track initial angle
+  - **Behavior**:
+    1. Calculate angle based on pointer position relative to custom center (or default)
+    2. If `customRotationCenter` defined, element orbits around it:
+       - Calculate angle delta from start of rotation
+       - Rotate element's center point around custom pivot
+       - Update both `angle` and position (`x`, `y`)
+    3. Element position updated so it orbits correctly
+- **Group**: Rotation center calculation in `packages/excalidraw/components/App.tsx` (lines 7444-7457)
+  - Reads `groupCustomRotationCenter` from first element with stored pivot
+  - Calculates absolute position by adding relative offset to group center
+  - Updates `pointerDownState.resize.center` with custom pivot coordinates
+  - Group rotates around custom pivot via standard rotation mechanics
+  - **Post-Rotation Update**: Recalculates and saves pivot offset after rotation completes (lines 9452-9471)
+    - Ensures pivot stays at correct relative position after bounding box changes
+
+**Coordinate System Notes:**
+- **Scene coordinates**: Absolute coordinate system
+- **Element coordinates**: Relative to element's top-left (x, y)
+- **Viewport coordinates**: Account for scrollX/scrollY and zoom
+- **Key Pattern**: For rotated elements, apply inverse rotation to convert pointer coords to element space
+
+**Files Modified:**
+- `packages/element/src/types.ts` - Added `customRotationCenter` and `groupCustomRotationCenter` properties (line 88)
+- `packages/element/src/resizeTest.ts` - Handle detection functions for single and group (lines 293-368)
+- `packages/element/src/resizeElements.ts` - Rotation logic with custom center for single elements
+- `packages/excalidraw/types.ts` - Added `isDraggingRotationCenter` state and `groupRotationCenter` (lines 238, 354)
+- `packages/excalidraw/appState.ts` - State initialization and observability configuration (lines 79, 208)
+- `packages/excalidraw/components/App.tsx` - Extensive modifications:
+  - Pointer down detection for groups (lines 7360-7399)
+  - Rotation center calculation for groups (lines 7444-7457)
+  - Group pivot drag handling with smart snap (lines 8602-8659)
+  - Group drag tracking (lines 8872-8908)
+  - Pivot persistence and post-rotation update (lines 9432-9471)
+- `packages/excalidraw/renderer/interactiveScene.ts` - Visual rendering for single and group (lines 606-702, 1221-1227)
+
+**Technical Implementation Notes:**
+- **Relative Coordinates**: Group pivot stored relative to group center for stability during transformations
+- **Rotation Matrix**: Smart snap uses proper trigonometric rotation for accurate corner detection
+- **State Synchronization**: Temporary `groupRotationCenter` in AppState, persistent `groupCustomRotationCenter` in element data
+- **Bounding Box Handling**: Post-rotation recalculation accounts for bounding box changes after rotation
+- **Scene Updates**: Explicit `this.scene.triggerUpdate()` calls ensure UI refreshes during drag operations
+
 ### Debugging
 - Enable source maps in browser DevTools
 - Use \`debug.ts\` utilities in both app and library

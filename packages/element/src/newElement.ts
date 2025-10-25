@@ -151,6 +151,7 @@ const _newElementBase = <T extends ExcalidrawElement>(
     link,
     locked,
     customData: rest.customData,
+    customRotationCenter: null,
   };
   return element;
 };

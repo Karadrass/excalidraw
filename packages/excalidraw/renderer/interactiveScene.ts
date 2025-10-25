@@ -1,6 +1,7 @@
 import {
   pointFrom,
   pointsEqual,
+  pointRotateRads,
   type GlobalPoint,
   type LocalPoint,
   type Radians,
@@ -602,6 +603,118 @@ const renderTransformHandles = (
   });
 };
 
+const renderRotationCenterHandle = (
+  context: CanvasRenderingContext2D,
+  renderConfig: InteractiveCanvasRenderConfig,
+  appState: InteractiveCanvasAppState,
+  element: NonDeleted<ExcalidrawElement>,
+  elementsMap: ElementsMap,
+): void => {
+  const [x1, y1, x2, y2, cx, cy] = getElementAbsoluteCoords(
+    element,
+    elementsMap,
+    true,
+  );
+
+  // Get custom rotation center or use default center
+  let rotationCenterX = cx;
+  let rotationCenterY = cy;
+
+  if (element.customRotationCenter) {
+    // Custom rotation center is stored relative to element's x,y
+    // Convert to absolute coordinates
+    const [relX, relY] = element.customRotationCenter;
+    rotationCenterX = element.x + relX;
+    rotationCenterY = element.y + relY;
+
+    // Rotate the custom center point around the element's default center
+    // to account for element rotation
+    if (element.angle !== 0) {
+      const rotated = pointRotateRads(
+        pointFrom(rotationCenterX, rotationCenterY),
+        pointFrom(element.x + element.width / 2, element.y + element.height / 2),
+        element.angle,
+      );
+      rotationCenterX = rotated[0];
+      rotationCenterY = rotated[1];
+    }
+  }
+
+  const handleSize = 8 / appState.zoom.value;
+
+  context.save();
+  context.strokeStyle = renderConfig.selectionColor || "#6965db";
+  context.fillStyle = "#ffffff";
+  context.lineWidth = 2 / appState.zoom.value;
+
+  // Draw a crosshair for the rotation center
+  fillCircle(context, rotationCenterX, rotationCenterY, handleSize, true);
+
+  // Draw crosshair lines
+  const crosshairSize = handleSize * 1.5;
+  context.beginPath();
+  context.moveTo(rotationCenterX - crosshairSize, rotationCenterY);
+  context.lineTo(rotationCenterX + crosshairSize, rotationCenterY);
+  context.moveTo(rotationCenterX, rotationCenterY - crosshairSize);
+  context.lineTo(rotationCenterX, rotationCenterY + crosshairSize);
+  context.stroke();
+
+  context.restore();
+};
+
+const renderGroupRotationCenterHandle = (
+  context: CanvasRenderingContext2D,
+  renderConfig: InteractiveCanvasRenderConfig,
+  appState: InteractiveCanvasAppState,
+  selectedElements: readonly NonDeleted<ExcalidrawElement>[],
+  elementsMap: ElementsMap,
+): void => {
+  const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+
+  // Default group center
+  const defaultCenterX = (x1 + x2) / 2;
+  const defaultCenterY = (y1 + y2) / 2;
+
+  // Use custom rotation center if dragging, or from stored element data, or default center
+  let rotationCenterX = defaultCenterX;
+  let rotationCenterY = defaultCenterY;
+
+  if (appState.groupRotationCenter) {
+    // Use the temporary pivot position (during drag)
+    rotationCenterX = appState.groupRotationCenter.x;
+    rotationCenterY = appState.groupRotationCenter.y;
+  } else {
+    // Check if elements have a stored group pivot
+    const firstElementWithPivot = selectedElements.find(el => el.groupCustomRotationCenter);
+    if (firstElementWithPivot?.groupCustomRotationCenter) {
+      const [relX, relY] = firstElementWithPivot.groupCustomRotationCenter;
+      rotationCenterX = defaultCenterX + relX;
+      rotationCenterY = defaultCenterY + relY;
+    }
+  }
+
+  const handleSize = 8 / appState.zoom.value;
+
+  context.save();
+  context.strokeStyle = renderConfig.selectionColor || "#6965db";
+  context.fillStyle = "#ffffff";
+  context.lineWidth = 2 / appState.zoom.value;
+
+  // Draw a crosshair for the rotation center
+  fillCircle(context, rotationCenterX, rotationCenterY, handleSize, true);
+
+  // Draw crosshair lines
+  const crosshairSize = handleSize * 1.5;
+  context.beginPath();
+  context.moveTo(rotationCenterX - crosshairSize, rotationCenterY);
+  context.lineTo(rotationCenterX + crosshairSize, rotationCenterY);
+  context.moveTo(rotationCenterX, rotationCenterY - crosshairSize);
+  context.lineTo(rotationCenterX, rotationCenterY + crosshairSize);
+  context.stroke();
+
+  context.restore();
+};
+
 const renderCropHandles = (
   context: CanvasRenderingContext2D,
   renderConfig: InteractiveCanvasRenderConfig,
@@ -1045,6 +1158,14 @@ const _renderInteractiveScene = ({
           transformHandles,
           selectedElements[0].angle,
         );
+        // Render rotation center handle
+        renderRotationCenterHandle(
+          context,
+          renderConfig,
+          appState,
+          selectedElements[0],
+          elementsMap,
+        );
       }
 
       if (appState.croppingElementId && !appState.isCropping) {
@@ -1104,6 +1225,15 @@ const _renderInteractiveScene = ({
           0,
         );
       }
+
+      // Render rotation center handle for group
+      renderGroupRotationCenterHandle(
+        context,
+        renderConfig,
+        appState,
+        selectedElements,
+        elementsMap,
+      );
     }
     context.restore();
   }

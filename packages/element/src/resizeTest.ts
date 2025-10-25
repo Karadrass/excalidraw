@@ -11,7 +11,7 @@ import type { GlobalPoint, LineSegment, LocalPoint } from "@excalidraw/math";
 
 import type { AppState, Device, Zoom } from "@excalidraw/excalidraw/types";
 
-import { getElementAbsoluteCoords } from "./bounds";
+import { getElementAbsoluteCoords, getCommonBounds } from "./bounds";
 import {
   getTransformHandlesFromCoords,
   getTransformHandles,
@@ -288,4 +288,80 @@ const getSelectionBorders = <Point extends LocalPoint | GlobalPoint>(
     s: [bottomRight, bottomLeft],
     w: [bottomLeft, topLeft],
   };
+};
+
+/**
+ * Tests if the pointer is on the rotation center handle
+ */
+export const isPointerOnRotationCenterHandle = (
+  element: NonDeletedExcalidrawElement,
+  elementsMap: ElementsMap,
+  x: number,
+  y: number,
+  zoom: Zoom,
+): boolean => {
+  const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap, true);
+
+  // Get the rotation center position
+  let rotationCenterX = (x1 + x2) / 2;
+  let rotationCenterY = (y1 + y2) / 2;
+
+  if (element.customRotationCenter) {
+    // Custom rotation center is relative to element's x,y
+    const [relX, relY] = element.customRotationCenter;
+    rotationCenterX = element.x + relX;
+    rotationCenterY = element.y + relY;
+
+    // Rotate the custom center point around the element's default center
+    // to account for element rotation
+    if (element.angle !== 0) {
+      const rotated = pointRotateRads(
+        pointFrom(rotationCenterX, rotationCenterY),
+        pointFrom(element.x + element.width / 2, element.y + element.height / 2),
+        element.angle,
+      );
+      rotationCenterX = rotated[0];
+      rotationCenterY = rotated[1];
+    }
+  }
+
+  // Handle size (same as in renderRotationCenterHandle)
+  const handleSize = 8 / zoom.value;
+
+  // Check if pointer is within the handle area (with a bit of tolerance)
+  const tolerance = handleSize * 2;
+  const distance = Math.sqrt(
+    Math.pow(x - rotationCenterX, 2) + Math.pow(y - rotationCenterY, 2)
+  );
+
+  return distance <= tolerance;
+};
+
+/**
+ * Tests if the pointer is on the group rotation center handle
+ */
+export const isPointerOnGroupRotationCenterHandle = (
+  selectedElements: readonly NonDeletedExcalidrawElement[],
+  elementsMap: ElementsMap,
+  x: number,
+  y: number,
+  zoom: Zoom,
+  customRotationCenter?: { x: number; y: number } | null,
+): boolean => {
+  const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+
+  // Get the group rotation center position (custom or default)
+  const rotationCenterX = customRotationCenter?.x ?? (x1 + x2) / 2;
+  const rotationCenterY = customRotationCenter?.y ?? (y1 + y2) / 2;
+
+  // Handle size (same as in renderGroupRotationCenterHandle)
+  const handleSize = 8 / zoom.value;
+
+  // Check if pointer is within the handle area (with a bit of tolerance)
+  const tolerance = handleSize * 2;
+  const distance = Math.sqrt(
+    Math.pow(x - rotationCenterX, 2) + Math.pow(y - rotationCenterY, 2)
+  );
+
+  return distance <= tolerance;
 };

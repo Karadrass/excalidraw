@@ -225,6 +225,8 @@ import {
   getCursorForResizingElement,
   getElementWithTransformHandleType,
   getTransformHandleTypeFromCoords,
+  isPointerOnRotationCenterHandle,
+  isPointerOnGroupRotationCenterHandle,
   dragNewElement,
   dragSelectedElements,
   getDragOffsetXY,
@@ -7188,6 +7190,7 @@ class App extends React.Component<AppProps, AppState> {
         offset: { x: 0, y: 0 },
         arrowDirection: "origin",
         center: { x: (maxX + minX) / 2, y: (maxY + minY) / 2 },
+        initialRotationAngle: 0,
       },
       hit: {
         element: null,
@@ -7301,6 +7304,27 @@ class App extends React.Component<AppProps, AppState> {
           this.state.selectedLinearElement.hoverPointIndex !== -1
         )
       ) {
+        // Check if clicking on rotation center handle first
+        if (
+          selectedElements.length === 1 &&
+          isPointerOnRotationCenterHandle(
+            selectedElements[0],
+            this.scene.getNonDeletedElementsMap(),
+            pointerDownState.origin.x,
+            pointerDownState.origin.y,
+            this.state.zoom,
+          )
+        ) {
+          this.setState({
+            isDraggingRotationCenter: true,
+          });
+          pointerDownState.drag.offset = {
+            x: 0,
+            y: 0,
+          };
+          return false;
+        }
+
         const elementWithTransformHandleType =
           getElementWithTransformHandleType(
             elements,
@@ -7333,6 +7357,45 @@ class App extends React.Component<AppProps, AppState> {
           }
         }
       } else if (selectedElements.length > 1) {
+        // Calculate the effective group rotation center (from state or from stored element data)
+        let effectiveGroupRotationCenter = this.state.groupRotationCenter;
+        if (!effectiveGroupRotationCenter) {
+          const firstElementWithPivot = selectedElements.find(el => el.groupCustomRotationCenter);
+          if (firstElementWithPivot?.groupCustomRotationCenter) {
+            const elementsMap = this.scene.getNonDeletedElementsMap();
+            const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+            const groupCenterX = (x1 + x2) / 2;
+            const groupCenterY = (y1 + y2) / 2;
+            const [relX, relY] = firstElementWithPivot.groupCustomRotationCenter;
+            effectiveGroupRotationCenter = {
+              x: groupCenterX + relX,
+              y: groupCenterY + relY,
+            };
+          }
+        }
+
+        // Check if clicking on group rotation center handle first
+        if (
+          isPointerOnGroupRotationCenterHandle(
+            selectedElements,
+            this.scene.getNonDeletedElementsMap(),
+            pointerDownState.origin.x,
+            pointerDownState.origin.y,
+            this.state.zoom,
+            effectiveGroupRotationCenter,
+          )
+        ) {
+          this.setState({
+            isDraggingRotationCenter: true,
+            // Initialize groupRotationCenter with the effective position
+            groupRotationCenter: effectiveGroupRotationCenter,
+          });
+          pointerDownState.drag.offset = {
+            x: 0,
+            y: 0,
+          };
+          return false;
+        }
         pointerDownState.resize.handleType = getTransformHandleTypeFromCoords(
           getCommonBounds(selectedElements),
           pointerDownState.origin.x,
@@ -7353,6 +7416,52 @@ class App extends React.Component<AppProps, AppState> {
             pointerDownState.origin.y,
           ),
         );
+
+        // Calculate initial rotation angle when rotation starts
+        if (pointerDownState.resize.handleType === "rotation") {
+          // Calculate rotation center (same logic as in rotateSingleElement)
+          let cx = pointerDownState.resize.center.x;
+          let cy = pointerDownState.resize.center.y;
+
+          if (selectedElements.length === 1 && selectedElements[0].customRotationCenter) {
+            const element = selectedElements[0];
+            const customCenter = element.customRotationCenter!; // Non-null assertion because of the if condition
+            const [relX, relY] = customCenter;
+            cx = element.x + relX;
+            cy = element.y + relY;
+
+            // Account for current element rotation
+            if (element.angle !== 0) {
+              const rotated = pointRotateRads(
+                pointFrom(cx, cy),
+                pointFrom(element.x + element.width / 2, element.y + element.height / 2),
+                element.angle,
+              );
+              cx = rotated[0];
+              cy = rotated[1];
+            }
+          } else if (selectedElements.length > 1) {
+            // For groups, check if there's a stored custom rotation center
+            const firstElementWithPivot = selectedElements.find(el => el.groupCustomRotationCenter);
+            if (firstElementWithPivot?.groupCustomRotationCenter) {
+              const [relX, relY] = firstElementWithPivot.groupCustomRotationCenter;
+              // relX and relY are relative to the group center
+              cx = cx + relX;
+              cy = cy + relY;
+            }
+          }
+
+          // Update the resize center with the custom pivot
+          pointerDownState.resize.center.x = cx;
+          pointerDownState.resize.center.y = cy;
+
+          // Calculate initial angle from pointer to rotation center
+          pointerDownState.resize.initialRotationAngle = Math.atan2(
+            pointerDownState.origin.y - cy,
+            pointerDownState.origin.x - cx,
+          );
+        }
+
         if (
           selectedElements.length === 1 &&
           isLinearElement(selectedElements[0]) &&
@@ -8427,6 +8536,143 @@ class App extends React.Component<AppProps, AppState> {
           return;
         }
       }
+      // Handle rotation center dragging
+      if (this.state.isDraggingRotationCenter) {
+        const selectedElements = this.scene.getSelectedElements(this.state);
+        if (selectedElements.length === 1) {
+          const element = selectedElements[0];
+
+          // Convert pointer coords to element-relative coordinates
+          // First, we need to account for element rotation
+          let pointerX = pointerCoords.x;
+          let pointerY = pointerCoords.y;
+
+          // If element is rotated, unrotate the pointer position relative to element center
+          if (element.angle !== 0) {
+            const elementCenterX = element.x + element.width / 2;
+            const elementCenterY = element.y + element.height / 2;
+
+            // Rotate pointer position backwards around element center
+            const unrotated = pointRotateRads(
+              pointFrom(pointerX, pointerY),
+              pointFrom(elementCenterX, elementCenterY),
+              -element.angle as Radians,
+            );
+            pointerX = unrotated[0];
+            pointerY = unrotated[1];
+          }
+
+          let relativeX = pointerX - element.x;
+          let relativeY = pointerY - element.y;
+
+          // If Ctrl is held, snap to corners and center
+          if (event[KEYS.CTRL_OR_CMD]) {
+            const snapPoints = [
+              { x: 0, y: 0 }, // top-left
+              { x: element.width, y: 0 }, // top-right
+              { x: element.width, y: element.height }, // bottom-right
+              { x: 0, y: element.height }, // bottom-left
+              { x: element.width / 2, y: element.height / 2 }, // center
+            ];
+
+            const SNAP_THRESHOLD = 20;
+            let closestPoint = { x: relativeX, y: relativeY };
+            let minDistance = Infinity;
+
+            for (const snapPoint of snapPoints) {
+              const distance = Math.sqrt(
+                Math.pow(relativeX - snapPoint.x, 2) +
+                Math.pow(relativeY - snapPoint.y, 2)
+              );
+              if (distance < SNAP_THRESHOLD && distance < minDistance) {
+                closestPoint = snapPoint;
+                minDistance = distance;
+              }
+            }
+
+            relativeX = closestPoint.x;
+            relativeY = closestPoint.y;
+          }
+
+          this.scene.mutateElement(element, {
+            customRotationCenter: [relativeX, relativeY] as LocalPoint,
+          });
+        } else if (selectedElements.length > 1) {
+          // Handle group rotation center dragging
+          pointerDownState.drag.hasOccurred = true;
+
+          let newCenterX = pointerCoords.x;
+          let newCenterY = pointerCoords.y;
+
+          // If Ctrl is held, snap to group corners and center
+          if (event[KEYS.CTRL_OR_CMD]) {
+            const elementsMap = this.scene.getNonDeletedElementsMap();
+            const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+            const groupCenterX = (x1 + x2) / 2;
+            const groupCenterY = (y1 + y2) / 2;
+
+            // Calculate actual corners for each element considering rotation
+            const snapPoints: { x: number; y: number }[] = [];
+
+            selectedElements.forEach(element => {
+              const cx = element.x + element.width / 2;
+              const cy = element.y + element.height / 2;
+              const angle = element.angle;
+
+              // Define the 4 corners relative to element center
+              const corners = [
+                { x: -element.width / 2, y: -element.height / 2 }, // top-left
+                { x: element.width / 2, y: -element.height / 2 },  // top-right
+                { x: element.width / 2, y: element.height / 2 },   // bottom-right
+                { x: -element.width / 2, y: element.height / 2 },  // bottom-left
+              ];
+
+              // Rotate each corner and convert to absolute coordinates
+              corners.forEach(corner => {
+                const rotatedX = corner.x * Math.cos(angle) - corner.y * Math.sin(angle);
+                const rotatedY = corner.x * Math.sin(angle) + corner.y * Math.cos(angle);
+                snapPoints.push({
+                  x: cx + rotatedX,
+                  y: cy + rotatedY,
+                });
+              });
+            });
+
+            // Add group center
+            snapPoints.push({ x: groupCenterX, y: groupCenterY });
+
+            const SNAP_THRESHOLD = 20;
+            let closestPoint = { x: newCenterX, y: newCenterY };
+            let minDistance = Infinity;
+
+            for (const snapPoint of snapPoints) {
+              const distance = Math.sqrt(
+                Math.pow(newCenterX - snapPoint.x, 2) +
+                Math.pow(newCenterY - snapPoint.y, 2)
+              );
+              if (distance < SNAP_THRESHOLD && distance < minDistance) {
+                closestPoint = snapPoint;
+                minDistance = distance;
+              }
+            }
+
+            newCenterX = closestPoint.x;
+            newCenterY = closestPoint.y;
+          }
+
+          const newCenter = {
+            x: newCenterX,
+            y: newCenterY,
+          };
+          this.setState({
+            groupRotationCenter: newCenter,
+          }, () => {
+            this.scene.triggerUpdate();
+          });
+        }
+        return;
+      }
+
       if (pointerDownState.resize.isResizing) {
         pointerDownState.lastCoords.x = pointerCoords.x;
         pointerDownState.lastCoords.y = pointerCoords.y;
@@ -8605,11 +8851,12 @@ class App extends React.Component<AppProps, AppState> {
             }
           }
 
+          // Get elementsMap once for reuse
+          const elementsMap = this.scene.getNonDeletedElementsMap();
+
           // #region move crop region
           if (this.state.croppingElementId) {
-            const croppingElement = this.scene
-              .getNonDeletedElementsMap()
-              .get(this.state.croppingElementId);
+            const croppingElement = elementsMap.get(this.state.croppingElementId);
 
             if (
               croppingElement &&
@@ -8706,10 +8953,18 @@ class App extends React.Component<AppProps, AppState> {
             dragOffset,
             this,
             event,
-            this.scene.getNonDeletedElementsMap(),
+            elementsMap,
           );
 
           this.setState({ snapLines });
+
+          // Calculate group center BEFORE dragging (for pivot tracking)
+          let oldGroupCenterX = 0, oldGroupCenterY = 0;
+          if (this.state.groupRotationCenter && selectedElements.length > 1) {
+            const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+            oldGroupCenterX = (x1 + x2) / 2;
+            oldGroupCenterY = (y1 + y2) / 2;
+          }
 
           // when we're editing the name of a frame, we want the user to be
           // able to select and interact with the text input
@@ -8724,11 +8979,28 @@ class App extends React.Component<AppProps, AppState> {
             );
           }
 
+          // Calculate group center AFTER dragging and move pivot accordingly
+          let newGroupRotationCenter = this.state.groupRotationCenter;
+          if (this.state.groupRotationCenter && selectedElements.length > 1) {
+            const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+            const newGroupCenterX = (x1 + x2) / 2;
+            const newGroupCenterY = (y1 + y2) / 2;
+            const actualOffset = {
+              x: newGroupCenterX - oldGroupCenterX,
+              y: newGroupCenterY - oldGroupCenterY,
+            };
+            newGroupRotationCenter = {
+              x: this.state.groupRotationCenter.x + actualOffset.x,
+              y: this.state.groupRotationCenter.y + actualOffset.y,
+            };
+          }
+
           this.setState({
             selectedElementsAreBeingDragged: true,
             // element is being dragged and selectionElement that was created on pointer down
             // should be removed
             selectionElement: null,
+            groupRotationCenter: newGroupRotationCenter,
           });
 
           if (
@@ -9177,6 +9449,27 @@ class App extends React.Component<AppProps, AppState> {
         isCropping,
       } = this.state;
 
+      // If we just finished rotating a group with a custom pivot, update the stored pivot
+      if (isRotating && this.state.groupRotationCenter) {
+        const selectedElements = this.scene.getSelectedElements(this.state);
+        if (selectedElements.length > 1) {
+          // Recalculate the pivot offset relative to the new group center
+          const elementsMap = this.scene.getNonDeletedElementsMap();
+          const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+          const newGroupCenterX = (x1 + x2) / 2;
+          const newGroupCenterY = (y1 + y2) / 2;
+          const newRelativeX = this.state.groupRotationCenter.x - newGroupCenterX;
+          const newRelativeY = this.state.groupRotationCenter.y - newGroupCenterY;
+
+          // Update all elements with the new relative position
+          selectedElements.forEach((element) => {
+            this.scene.mutateElement(element, {
+              groupCustomRotationCenter: [newRelativeX, newRelativeY] as LocalPoint,
+            });
+          });
+        }
+      }
+
       this.setState((prevState) => ({
         isResizing: false,
         isRotating: false,
@@ -9244,8 +9537,34 @@ class App extends React.Component<AppProps, AppState> {
         });
       }
 
+      // If we were dragging the group rotation center, save it to all elements
+      if (this.state.isDraggingRotationCenter && this.state.groupRotationCenter) {
+        const selectedElements = this.scene.getSelectedElements(this.state);
+        if (selectedElements.length > 1) {
+          // Calculate the pivot position relative to the group center
+          const elementsMap = this.scene.getNonDeletedElementsMap();
+          const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+          const groupCenterX = (x1 + x2) / 2;
+          const groupCenterY = (y1 + y2) / 2;
+          const relativeX = this.state.groupRotationCenter.x - groupCenterX;
+          const relativeY = this.state.groupRotationCenter.y - groupCenterY;
+
+          // Store the relative position in all elements
+          selectedElements.forEach((element) => {
+            this.scene.mutateElement(element, {
+              groupCustomRotationCenter: [relativeX, relativeY] as LocalPoint,
+            });
+          });
+        }
+      }
+
       this.setState({
         selectedElementsAreBeingDragged: false,
+        isDraggingRotationCenter: false,
+        // Keep groupRotationCenter if we were dragging it OR dragging the group, otherwise reset it
+        groupRotationCenter: this.state.isDraggingRotationCenter || this.state.selectedElementsAreBeingDragged
+          ? this.state.groupRotationCenter
+          : null,
       });
       const elementsMap = this.scene.getNonDeletedElementsMap();
 
@@ -11140,6 +11459,7 @@ class App extends React.Component<AppProps, AppState> {
         resizeY,
         pointerDownState.resize.center.x,
         pointerDownState.resize.center.y,
+        pointerDownState.resize.initialRotationAngle,
       )
     ) {
       const suggestedBindings = getSuggestedBindingsForArrows(

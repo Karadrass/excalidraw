@@ -234,6 +234,8 @@ export type InteractiveCanvasAppState = Readonly<
     // Search matches
     searchMatches: AppState["searchMatches"];
     activeLockedId: AppState["activeLockedId"];
+    // Group rotation center
+    groupRotationCenter: AppState["groupRotationCenter"];
   }
 >;
 
@@ -350,6 +352,8 @@ export interface AppState {
   name: string | null;
   isResizing: boolean;
   isRotating: boolean;
+  isDraggingRotationCenter: boolean;
+  groupRotationCenter: { x: number; y: number } | null;
   zoom: Zoom;
   openMenu: "canvas" | null;
   openPopup:
@@ -772,6 +776,8 @@ export type PointerDownState = Readonly<{
     arrowDirection: "origin" | "end";
     // This is a center point of selected elements determined on the initial pointer down event (for rotation only)
     center: { x: number; y: number };
+    // Initial rotation angle from pointer to rotation center (for rotation only)
+    initialRotationAngle: number;
   };
   hit: {
     // The element the pointer is "hitting", is determined on the initial
