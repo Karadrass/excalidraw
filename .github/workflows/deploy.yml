@@ -39,15 +39,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
-      - name: Test SFTP connection
-        run: |
-          echo "Testing SFTP connection..."
-          sshpass -p '${{ secrets.OVH_PASSWORD }}' sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
-          pwd
-          ls -la
-          quit
-          EOF
-
       - name: Deploy to OVH via SFTP
         run: |
           echo "Starting deployment to /excalidraw/..."
