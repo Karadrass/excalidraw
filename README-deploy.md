@@ -1,0 +1,1 @@
+# Excalidraw avec pivot personnalisé
