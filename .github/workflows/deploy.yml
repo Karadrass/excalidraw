@@ -34,44 +34,45 @@ jobs:
           # Create list of files to deploy
           find . -type f > ../../deploy-files.txt
 
+      - name: Install deployment tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
       - name: Test SFTP connection
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.OVH_HOST }}
-          username: ${{ secrets.OVH_USERNAME }}
-          password: ${{ secrets.OVH_PASSWORD }}
-          script: |
-            echo "SFTP connection successful"
-            mkdir -p ~/excalidraw
-            echo "Directory created/verified"
+        run: |
+          echo "Testing SFTP connection..."
+          sshpass -p '${{ secrets.OVH_PASSWORD }}' sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
+          pwd
+          ls -la
+          quit
+          EOF
 
       - name: Deploy to OVH via SFTP
         run: |
-          # Install lftp for reliable SFTP transfer
-          sudo apt-get update
-          sudo apt-get install -y lftp
+          echo "Starting deployment to /excalidraw/..."
 
-          # Create SFTP batch script
-          cat > sftp-commands.txt << 'EOF'
-          set sftp:auto-confirm yes
-          set ssl:verify-certificate no
-          mirror --reverse --delete --verbose --exclude .git/ --exclude .github/ --exclude node_modules/ --exclude .env excalidraw-app/build /excalidraw
-          bye
+          # Utiliser sftp pour déployer
+          sshpass -p '${{ secrets.OVH_PASSWORD }}' sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
+          # Naviguer vers le répertoire web
+          cd www
+
+          # Créer le dossier excalidraw s'il n'existe pas
+          mkdir excalidraw
+          cd excalidraw
+
+          # Changer vers le dossier local du build
+          lcd excalidraw-app/build
+
+          # Uploader tous les fichiers
+          put -r * .
+
+          # Vérifier le déploiement
+          ls -la
+          quit
           EOF
 
-          # Execute SFTP transfer
-          lftp -u ${{ secrets.OVH_USERNAME }},${{ secrets.OVH_PASSWORD }} sftp://${{ secrets.OVH_HOST }} < sftp-commands.txt
-
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.OVH_HOST }}
-          username: ${{ secrets.OVH_USERNAME }}
-          password: ${{ secrets.OVH_PASSWORD }}
-          script: |
-            echo "Checking deployed files..."
-            ls -lah ~/excalidraw/ | head -20
-            echo "Deployment complete!"
+          echo "Deployment completed!"
 
       - name: Deployment status
         if: success()
