@@ -233,14 +233,14 @@ export default defineConfig(({ mode }) => {
           background_color: "#ffffff",
           file_handlers: [
             {
-              action: "/",
+              action: "/excalidraw/",
               accept: {
                 "application/vnd.excalidraw+json": [".excalidraw"],
               },
             },
           ],
           share_target: {
-            action: "/web-share-target",
+            action: "/excalidraw/web-share-target",
             method: "POST",
             enctype: "multipart/form-data",
             params: {
