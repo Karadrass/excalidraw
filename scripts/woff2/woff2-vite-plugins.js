@@ -1,6 +1,6 @@
 // define `EXCALIDRAW_ASSET_PATH` as a SSOT
-const OSS_FONTS_CDN = "https://excalidraw.nyc3.cdn.digitaloceanspaces.com/oss/";
-const OSS_FONTS_FALLBACK = "/";
+const OSS_FONTS_CDN = "/excalidraw/";
+const OSS_FONTS_FALLBACK = "/excalidraw/";
 
 /**
  * Custom vite plugin for auto-prefixing `EXCALIDRAW_ASSET_PATH` woff2 fonts in `excalidraw-app`.
