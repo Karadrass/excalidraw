@@ -42,18 +42,23 @@ jobs:
       - name: Test SFTP connection
         run: |
           echo "Testing SFTP connection..."
-          sshpass -p '${{ secrets.OVH_PASSWORD }}' sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
+          echo '${{ secrets.OVH_PASSWORD }}' > /tmp/sftp_pass
+          sshpass -f /tmp/sftp_pass sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
           pwd
           ls -la
           quit
           EOF
+          rm /tmp/sftp_pass
 
       - name: Deploy to OVH via SFTP
         run: |
           echo "Starting deployment to /excalidraw/..."
 
+          # Utiliser fichier temporaire pour le mot de passe
+          echo '${{ secrets.OVH_PASSWORD }}' > /tmp/sftp_pass
+
           # Utiliser sftp pour déployer
-          sshpass -p '${{ secrets.OVH_PASSWORD }}' sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
+          sshpass -f /tmp/sftp_pass sftp -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${{ secrets.OVH_USERNAME }}@${{ secrets.OVH_HOST }} << EOF
           # Naviguer vers le répertoire web
           cd www
 
@@ -71,6 +76,9 @@ jobs:
           ls -la
           quit
           EOF
+
+          # Nettoyer le fichier de mot de passe
+          rm /tmp/sftp_pass
 
           echo "Deployment completed!"
 
