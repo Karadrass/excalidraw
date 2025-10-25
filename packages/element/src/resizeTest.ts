@@ -300,11 +300,6 @@ export const isPointerOnRotationCenterHandle = (
   y: number,
   zoom: Zoom,
 ): boolean => {
-  // Only allow interacting with rotation center handle if custom pivot is set
-  if (!element.customRotationCenter) {
-    return false;
-  }
-
   const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap, true);
 
   // Get the rotation center position
@@ -333,13 +328,25 @@ export const isPointerOnRotationCenterHandle = (
   // Handle size (same as in renderRotationCenterHandle)
   const handleSize = 8 / zoom.value;
 
-  // Check if pointer is within the handle area (with a bit of tolerance)
-  const tolerance = handleSize;
+  // Calculate distance from pointer to rotation center
   const distance = Math.sqrt(
     Math.pow(x - rotationCenterX, 2) + Math.pow(y - rotationCenterY, 2)
   );
 
-  return distance <= tolerance;
+  // Only activate pivot handle if:
+  // 1. Pointer is very close to the handle (within handleSize / 2)
+  // 2. AND the element is large enough (width or height > 50) to avoid interference with small elements
+  const elementWidth = x2 - x1;
+  const elementHeight = y2 - y1;
+  const minElementSize = 15;
+
+  if (elementWidth < minElementSize && elementHeight < minElementSize) {
+    // For small elements, require even more precision to avoid drag interference
+    return distance <= handleSize / 4;
+  }
+
+  // For larger elements, use normal tolerance
+  return distance <= handleSize / 2;
 };
 
 /**
@@ -353,11 +360,6 @@ export const isPointerOnGroupRotationCenterHandle = (
   zoom: Zoom,
   customRotationCenter?: { x: number; y: number } | null,
 ): boolean => {
-  // Only allow interacting with rotation center handle if custom pivot is set
-  if (!customRotationCenter) {
-    return false;
-  }
-
   const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
 
   // Get the group rotation center position (custom or default)
@@ -367,11 +369,23 @@ export const isPointerOnGroupRotationCenterHandle = (
   // Handle size (same as in renderGroupRotationCenterHandle)
   const handleSize = 8 / zoom.value;
 
-  // Check if pointer is within the handle area (with a bit of tolerance)
-  const tolerance = handleSize;
+  // Calculate distance from pointer to rotation center
   const distance = Math.sqrt(
     Math.pow(x - rotationCenterX, 2) + Math.pow(y - rotationCenterY, 2)
   );
 
-  return distance <= tolerance;
+  // Only activate pivot handle if:
+  // 1. Pointer is very close to the handle (within handleSize / 2)
+  // 2. AND the group is large enough (width or height > 50) to avoid interference with small groups
+  const groupWidth = x2 - x1;
+  const groupHeight = y2 - y1;
+  const minGroupSize = 15;
+
+  if (groupWidth < minGroupSize && groupHeight < minGroupSize) {
+    // For small groups, require even more precision to avoid drag interference
+    return distance <= handleSize / 4;
+  }
+
+  // For larger groups, use normal tolerance
+  return distance <= handleSize / 2;
 };
