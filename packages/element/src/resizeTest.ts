@@ -334,19 +334,19 @@ export const isPointerOnRotationCenterHandle = (
   );
 
   // Only activate pivot handle if:
-  // 1. Pointer is very close to the handle (within handleSize / 2)
-  // 2. AND the element is large enough (width or height > 50) to avoid interference with small elements
+  // 1. Pointer is close to the handle (within handleSize)
+  // 2. For small elements, use stricter tolerance to avoid drag interference
   const elementWidth = x2 - x1;
   const elementHeight = y2 - y1;
   const minElementSize = 15;
 
   if (elementWidth < minElementSize && elementHeight < minElementSize) {
-    // For small elements, require even more precision to avoid drag interference
-    return distance <= handleSize / 4;
+    // For small elements, require more precision to avoid drag interference
+    return distance <= handleSize;
   }
 
-  // For larger elements, use normal tolerance
-  return distance <= handleSize / 2;
+  // For larger elements, use full handleSize tolerance (8px at zoom 1.0)
+  return distance <= handleSize;
 };
 
 /**
@@ -383,9 +383,9 @@ export const isPointerOnGroupRotationCenterHandle = (
 
   if (groupWidth < minGroupSize && groupHeight < minGroupSize) {
     // For small groups, require even more precision to avoid drag interference
-    return distance <= handleSize / 4;
+    return distance <= handleSize;
   }
 
   // For larger groups, use normal tolerance
-  return distance <= handleSize / 2;
+  return distance <= handleSize;
 };
