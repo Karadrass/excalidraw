@@ -24,7 +24,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Build production
-        run: yarn build
+        run: yarn build:app:docker
         env:
           NODE_ENV: production
 
