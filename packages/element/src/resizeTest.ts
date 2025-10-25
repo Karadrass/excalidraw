@@ -300,6 +300,11 @@ export const isPointerOnRotationCenterHandle = (
   y: number,
   zoom: Zoom,
 ): boolean => {
+  // Only allow interacting with rotation center handle if custom pivot is set
+  if (!element.customRotationCenter) {
+    return false;
+  }
+
   const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap, true);
 
   // Get the rotation center position
@@ -329,7 +334,7 @@ export const isPointerOnRotationCenterHandle = (
   const handleSize = 8 / zoom.value;
 
   // Check if pointer is within the handle area (with a bit of tolerance)
-  const tolerance = handleSize * 2;
+  const tolerance = handleSize;
   const distance = Math.sqrt(
     Math.pow(x - rotationCenterX, 2) + Math.pow(y - rotationCenterY, 2)
   );
@@ -348,6 +353,11 @@ export const isPointerOnGroupRotationCenterHandle = (
   zoom: Zoom,
   customRotationCenter?: { x: number; y: number } | null,
 ): boolean => {
+  // Only allow interacting with rotation center handle if custom pivot is set
+  if (!customRotationCenter) {
+    return false;
+  }
+
   const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
 
   // Get the group rotation center position (custom or default)
@@ -358,7 +368,7 @@ export const isPointerOnGroupRotationCenterHandle = (
   const handleSize = 8 / zoom.value;
 
   // Check if pointer is within the handle area (with a bit of tolerance)
-  const tolerance = handleSize * 2;
+  const tolerance = handleSize;
   const distance = Math.sqrt(
     Math.pow(x - rotationCenterX, 2) + Math.pow(y - rotationCenterY, 2)
   );

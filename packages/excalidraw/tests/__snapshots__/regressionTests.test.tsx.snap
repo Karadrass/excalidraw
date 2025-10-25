@@ -87,15 +87,22 @@ exports[`given element A and group of elements B and given both are selected whe
   },
   "previousSelectedElementIds": {
     "id0": true,
+    "id3": true,
+    "id6": true,
   },
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
   "scrolledOutside": false,
   "searchMatches": null,
-  "selectedElementIds": {},
+  "selectedElementIds": {
+    "id0": true,
+    "id6": true,
+  },
   "selectedElementsAreBeingDragged": false,
-  "selectedGroupIds": {},
+  "selectedGroupIds": {
+    "id15": true,
+  },
   "selectedLinearElement": null,
   "selectionElement": null,
   "shouldCacheIgnoreZoom": false,
@@ -124,7 +131,7 @@ exports[`given element A and group of elements B and given both are selected whe
 
 exports[`given element A and group of elements B and given both are selected when user clicks on B, on pointer up only elements from B should be selected > [end of test] number of elements 1`] = `0`;
 
-exports[`given element A and group of elements B and given both are selected when user clicks on B, on pointer up only elements from B should be selected > [end of test] number of renders 1`] = `17`;
+exports[`given element A and group of elements B and given both are selected when user clicks on B, on pointer up only elements from B should be selected > [end of test] number of renders 1`] = `18`;
 
 exports[`given element A and group of elements B and given both are selected when user clicks on B, on pointer up only elements from B should be selected > [end of test] redo stack 1`] = `[]`;
 
@@ -388,17 +395,12 @@ exports[`given element A and group of elements B and given both are selected whe
     "appState": AppStateDelta {
       "delta": Delta {
         "deleted": {
-          "selectedElementIds": {},
-          "selectedGroupIds": {},
+          "selectedElementIds": {
+            "id3": true,
+          },
         },
         "inserted": {
-          "selectedElementIds": {
-            "id0": true,
-            "id6": true,
-          },
-          "selectedGroupIds": {
-            "id15": true,
-          },
+          "selectedElementIds": {},
         },
       },
     },
@@ -408,6 +410,26 @@ exports[`given element A and group of elements B and given both are selected whe
       "updated": {},
     },
     "id": "id20",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {},
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id3": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id23",
   },
 ]
 `;
@@ -869,7 +891,7 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
   "cursorButton": "up",
   "defaultSidebarDockedPreference": false,
   "editingFrame": null,
-  "editingGroupId": null,
+  "editingGroupId": "id28",
   "editingTextElement": null,
   "elementsToHighlight": null,
   "errorMessage": null,
@@ -921,15 +943,15 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
     "initialized": true,
     "type": "selection",
   },
-  "previousSelectedElementIds": {
-    "id0": true,
-  },
+  "previousSelectedElementIds": {},
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
   "scrolledOutside": false,
   "searchMatches": null,
-  "selectedElementIds": {},
+  "selectedElementIds": {
+    "id19": true,
+  },
   "selectedElementsAreBeingDragged": false,
   "selectedGroupIds": {},
   "selectedLinearElement": null,
@@ -960,7 +982,7 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
 
 exports[`regression tests > Cmd/Ctrl-click exclusively select element under pointer > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > Cmd/Ctrl-click exclusively select element under pointer > [end of test] number of renders 1`] = `14`;
+exports[`regression tests > Cmd/Ctrl-click exclusively select element under pointer > [end of test] number of renders 1`] = `26`;
 
 exports[`regression tests > Cmd/Ctrl-click exclusively select element under pointer > [end of test] redo stack 1`] = `[]`;
 
@@ -1165,12 +1187,13 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
     "appState": AppStateDelta {
       "delta": Delta {
         "deleted": {
+          "editingGroupId": "id12",
           "selectedElementIds": {},
           "selectedGroupIds": {},
         },
         "inserted": {
+          "editingGroupId": null,
           "selectedElementIds": {
-            "id0": true,
             "id3": true,
           },
           "selectedGroupIds": {
@@ -1185,6 +1208,226 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
       "updated": {},
     },
     "id": "id17",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "editingGroupId": null,
+          "selectedElementIds": {
+            "id19": true,
+          },
+        },
+        "inserted": {
+          "editingGroupId": "id12",
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {
+        "id19": {
+          "deleted": {
+            "angle": 0,
+            "backgroundColor": "transparent",
+            "boundElements": null,
+            "customData": undefined,
+            "customRotationCenter": null,
+            "fillStyle": "solid",
+            "frameId": null,
+            "groupIds": [],
+            "height": 10,
+            "index": "a2",
+            "isDeleted": false,
+            "link": null,
+            "locked": false,
+            "opacity": 100,
+            "roughness": 1,
+            "roundness": null,
+            "strokeColor": "#1e1e1e",
+            "strokeStyle": "solid",
+            "strokeWidth": 2,
+            "type": "rectangle",
+            "version": 3,
+            "width": 10,
+            "x": 60,
+            "y": 0,
+          },
+          "inserted": {
+            "isDeleted": true,
+            "version": 2,
+          },
+        },
+      },
+      "updated": {},
+    },
+    "id": "id21",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id0": true,
+            "id3": true,
+          },
+          "selectedGroupIds": {
+            "id12": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id19": true,
+          },
+          "selectedGroupIds": {},
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id24",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id19": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {},
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id27",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedGroupIds": {
+            "id28": true,
+          },
+        },
+        "inserted": {
+          "selectedGroupIds": {
+            "id12": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {
+        "id0": {
+          "deleted": {
+            "groupIds": [
+              "id12",
+              "id28",
+            ],
+            "version": 5,
+          },
+          "inserted": {
+            "groupIds": [
+              "id12",
+            ],
+            "version": 4,
+          },
+        },
+        "id19": {
+          "deleted": {
+            "groupIds": [
+              "id28",
+            ],
+            "version": 4,
+          },
+          "inserted": {
+            "groupIds": [],
+            "version": 3,
+          },
+        },
+        "id3": {
+          "deleted": {
+            "groupIds": [
+              "id12",
+              "id28",
+            ],
+            "version": 5,
+          },
+          "inserted": {
+            "groupIds": [
+              "id12",
+            ],
+            "version": 4,
+          },
+        },
+      },
+    },
+    "id": "id30",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "editingGroupId": "id12",
+          "selectedElementIds": {},
+          "selectedGroupIds": {},
+        },
+        "inserted": {
+          "editingGroupId": null,
+          "selectedElementIds": {
+            "id19": true,
+            "id3": true,
+          },
+          "selectedGroupIds": {
+            "id28": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id33",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "editingGroupId": "id28",
+          "selectedElementIds": {
+            "id19": true,
+          },
+        },
+        "inserted": {
+          "editingGroupId": "id12",
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id36",
   },
 ]
 `;
@@ -1879,14 +2122,16 @@ exports[`regression tests > alt-drag duplicates an element > [end of test] appSt
     "initialized": true,
     "type": "selection",
   },
-  "previousSelectedElementIds": {},
+  "previousSelectedElementIds": {
+    "id0": true,
+  },
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
   "scrolledOutside": false,
   "searchMatches": null,
   "selectedElementIds": {
-    "id0": true,
+    "id4": true,
   },
   "selectedElementsAreBeingDragged": false,
   "selectedGroupIds": {},
@@ -1918,7 +2163,7 @@ exports[`regression tests > alt-drag duplicates an element > [end of test] appSt
 
 exports[`regression tests > alt-drag duplicates an element > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > alt-drag duplicates an element > [end of test] number of renders 1`] = `7`;
+exports[`regression tests > alt-drag duplicates an element > [end of test] number of renders 1`] = `8`;
 
 exports[`regression tests > alt-drag duplicates an element > [end of test] redo stack 1`] = `[]`;
 
@@ -1980,30 +2225,66 @@ exports[`regression tests > alt-drag duplicates an element > [end of test] undo 
   {
     "appState": AppStateDelta {
       "delta": Delta {
-        "deleted": {},
-        "inserted": {},
+        "deleted": {
+          "selectedElementIds": {
+            "id4": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
       },
     },
     "elements": {
       "added": {},
-      "removed": {},
+      "removed": {
+        "id4": {
+          "deleted": {
+            "angle": 0,
+            "backgroundColor": "transparent",
+            "boundElements": null,
+            "customData": undefined,
+            "customRotationCenter": null,
+            "fillStyle": "solid",
+            "frameId": null,
+            "groupIds": [],
+            "height": 10,
+            "index": "a1",
+            "isDeleted": false,
+            "link": null,
+            "locked": false,
+            "opacity": 100,
+            "roughness": 1,
+            "roundness": null,
+            "strokeColor": "#1e1e1e",
+            "strokeStyle": "solid",
+            "strokeWidth": 2,
+            "type": "rectangle",
+            "version": 6,
+            "width": 10,
+            "x": 20,
+            "y": 20,
+          },
+          "inserted": {
+            "isDeleted": true,
+            "version": 5,
+          },
+        },
+      },
       "updated": {
         "id0": {
           "deleted": {
-            "customRotationCenter": [
-              12,
-              12,
-            ],
-            "version": 4,
+            "version": 5,
           },
           "inserted": {
-            "customRotationCenter": null,
             "version": 3,
           },
         },
       },
     },
-    "id": "id5",
+    "id": "id6",
   },
 ]
 `;
@@ -2788,6 +3069,254 @@ exports[`regression tests > change the properties of a shape > [end of test] und
 ]
 `;
 
+exports[`regression tests > click on an element and drag it > [dragged] appState 1`] = `
+{
+  "activeEmbeddable": null,
+  "activeLockedId": null,
+  "activeTool": {
+    "customType": null,
+    "fromSelection": false,
+    "lastActiveTool": null,
+    "locked": false,
+    "type": "selection",
+  },
+  "collaborators": Map {},
+  "contextMenu": null,
+  "croppingElementId": null,
+  "currentChartType": "bar",
+  "currentHoveredFontFamily": null,
+  "currentItemArrowType": "round",
+  "currentItemBackgroundColor": "transparent",
+  "currentItemEndArrowhead": "arrow",
+  "currentItemFillStyle": "solid",
+  "currentItemFontFamily": 5,
+  "currentItemFontSize": 20,
+  "currentItemOpacity": 100,
+  "currentItemRoughness": 1,
+  "currentItemRoundness": "sharp",
+  "currentItemStartArrowhead": null,
+  "currentItemStrokeColor": "#1e1e1e",
+  "currentItemStrokeStyle": "solid",
+  "currentItemStrokeWidth": 2,
+  "currentItemTextAlign": "left",
+  "cursorButton": "up",
+  "defaultSidebarDockedPreference": false,
+  "editingFrame": null,
+  "editingGroupId": null,
+  "editingTextElement": null,
+  "elementsToHighlight": null,
+  "errorMessage": null,
+  "exportBackground": true,
+  "exportEmbedScene": false,
+  "exportScale": 1,
+  "exportWithDarkMode": false,
+  "fileHandle": null,
+  "followedBy": Set {},
+  "frameRendering": {
+    "clip": true,
+    "enabled": true,
+    "name": true,
+    "outline": true,
+  },
+  "frameToHighlight": null,
+  "gridModeEnabled": false,
+  "gridSize": 20,
+  "gridStep": 5,
+  "groupRotationCenter": null,
+  "height": 768,
+  "hoveredElementIds": {},
+  "isBindingEnabled": true,
+  "isCropping": false,
+  "isDraggingRotationCenter": false,
+  "isLoading": false,
+  "isResizing": false,
+  "isRotating": false,
+  "lastPointerDownWith": "mouse",
+  "lockedMultiSelections": {},
+  "multiElement": null,
+  "name": "Untitled-201933152653",
+  "newElement": null,
+  "objectsSnapModeEnabled": false,
+  "offsetLeft": 0,
+  "offsetTop": 0,
+  "openDialog": null,
+  "openMenu": null,
+  "openPopup": null,
+  "openSidebar": null,
+  "originSnapOffset": null,
+  "pasteDialog": {
+    "data": null,
+    "shown": false,
+  },
+  "penDetected": false,
+  "penMode": false,
+  "preferredSelectionTool": {
+    "initialized": true,
+    "type": "selection",
+  },
+  "previousSelectedElementIds": {
+    "id0": true,
+  },
+  "resizingElement": null,
+  "scrollX": 0,
+  "scrollY": 0,
+  "scrolledOutside": false,
+  "searchMatches": null,
+  "selectedElementIds": {
+    "id0": true,
+  },
+  "selectedElementsAreBeingDragged": false,
+  "selectedGroupIds": {},
+  "selectedLinearElement": null,
+  "selectionElement": null,
+  "shouldCacheIgnoreZoom": false,
+  "showHyperlinkPopup": false,
+  "showWelcomeScreen": true,
+  "snapLines": [],
+  "startBoundElement": null,
+  "stats": {
+    "open": false,
+    "panels": 3,
+  },
+  "stylesPanelMode": "full",
+  "suggestedBindings": [],
+  "theme": "light",
+  "toast": null,
+  "userToFollow": null,
+  "viewBackgroundColor": "#ffffff",
+  "viewModeEnabled": false,
+  "width": 1024,
+  "zenModeEnabled": false,
+  "zoom": {
+    "value": 1,
+  },
+}
+`;
+
+exports[`regression tests > click on an element and drag it > [dragged] element 0 1`] = `
+{
+  "angle": 0,
+  "backgroundColor": "transparent",
+  "boundElements": null,
+  "customData": undefined,
+  "customRotationCenter": null,
+  "fillStyle": "solid",
+  "frameId": null,
+  "groupIds": [],
+  "height": 10,
+  "id": "id0",
+  "index": "a0",
+  "isDeleted": false,
+  "link": null,
+  "locked": false,
+  "opacity": 100,
+  "roughness": 1,
+  "roundness": null,
+  "seed": 1278240551,
+  "strokeColor": "#1e1e1e",
+  "strokeStyle": "solid",
+  "strokeWidth": 2,
+  "type": "rectangle",
+  "updated": 1,
+  "version": 4,
+  "versionNonce": 1014066025,
+  "width": 10,
+  "x": 20,
+  "y": 20,
+}
+`;
+
+exports[`regression tests > click on an element and drag it > [dragged] number of elements 1`] = `1`;
+
+exports[`regression tests > click on an element and drag it > [dragged] number of renders 1`] = `8`;
+
+exports[`regression tests > click on an element and drag it > [dragged] redo stack 1`] = `[]`;
+
+exports[`regression tests > click on an element and drag it > [dragged] undo stack 1`] = `
+[
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {},
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {
+        "id0": {
+          "deleted": {
+            "angle": 0,
+            "backgroundColor": "transparent",
+            "boundElements": null,
+            "customData": undefined,
+            "customRotationCenter": null,
+            "fillStyle": "solid",
+            "frameId": null,
+            "groupIds": [],
+            "height": 10,
+            "index": "a0",
+            "isDeleted": false,
+            "link": null,
+            "locked": false,
+            "opacity": 100,
+            "roughness": 1,
+            "roundness": null,
+            "strokeColor": "#1e1e1e",
+            "strokeStyle": "solid",
+            "strokeWidth": 2,
+            "type": "rectangle",
+            "version": 3,
+            "width": 10,
+            "x": 10,
+            "y": 10,
+          },
+          "inserted": {
+            "isDeleted": true,
+            "version": 2,
+          },
+        },
+      },
+      "updated": {},
+    },
+    "id": "id2",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {},
+        "inserted": {},
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {
+        "id0": {
+          "deleted": {
+            "version": 4,
+            "x": 20,
+            "y": 20,
+          },
+          "inserted": {
+            "version": 3,
+            "x": 10,
+            "y": 10,
+          },
+        },
+      },
+    },
+    "id": "id5",
+  },
+]
+`;
+
 exports[`regression tests > click on an element and drag it > [end of test] appState 1`] = `
 {
   "activeEmbeddable": null,
@@ -2873,7 +3402,9 @@ exports[`regression tests > click on an element and drag it > [end of test] appS
     "initialized": true,
     "type": "selection",
   },
-  "previousSelectedElementIds": {},
+  "previousSelectedElementIds": {
+    "id0": true,
+  },
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
@@ -2912,7 +3443,7 @@ exports[`regression tests > click on an element and drag it > [end of test] appS
 
 exports[`regression tests > click on an element and drag it > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > click on an element and drag it > [end of test] number of renders 1`] = `7`;
+exports[`regression tests > click on an element and drag it > [end of test] number of renders 1`] = `10`;
 
 exports[`regression tests > click on an element and drag it > [end of test] redo stack 1`] = `[]`;
 
@@ -2984,20 +3515,46 @@ exports[`regression tests > click on an element and drag it > [end of test] undo
       "updated": {
         "id0": {
           "deleted": {
-            "customRotationCenter": [
-              12,
-              12,
-            ],
             "version": 4,
+            "x": 20,
+            "y": 20,
           },
           "inserted": {
-            "customRotationCenter": null,
             "version": 3,
+            "x": 10,
+            "y": 10,
           },
         },
       },
     },
     "id": "id5",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {},
+        "inserted": {},
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {
+        "id0": {
+          "deleted": {
+            "version": 5,
+            "x": 10,
+            "y": 10,
+          },
+          "inserted": {
+            "version": 4,
+            "x": 20,
+            "y": 20,
+          },
+        },
+      },
+    },
+    "id": "id8",
   },
 ]
 `;
@@ -3087,14 +3644,16 @@ exports[`regression tests > click to select a shape > [end of test] appState 1`]
     "initialized": true,
     "type": "selection",
   },
-  "previousSelectedElementIds": {},
+  "previousSelectedElementIds": {
+    "id3": true,
+  },
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
   "scrolledOutside": false,
   "searchMatches": null,
   "selectedElementIds": {
-    "id3": true,
+    "id0": true,
   },
   "selectedElementsAreBeingDragged": false,
   "selectedGroupIds": {},
@@ -3126,7 +3685,7 @@ exports[`regression tests > click to select a shape > [end of test] appState 1`]
 
 exports[`regression tests > click to select a shape > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > click to select a shape > [end of test] number of renders 1`] = `9`;
+exports[`regression tests > click to select a shape > [end of test] number of renders 1`] = `10`;
 
 exports[`regression tests > click to select a shape > [end of test] redo stack 1`] = `[]`;
 
@@ -3239,6 +3798,28 @@ exports[`regression tests > click to select a shape > [end of test] undo stack 1
       "updated": {},
     },
     "id": "id5",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id3": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id8",
   },
 ]
 `;
@@ -4385,6 +4966,7 @@ exports[`regression tests > deselects group of selected elements on pointer up w
     "type": "selection",
   },
   "previousSelectedElementIds": {
+    "id0": true,
     "id3": true,
   },
   "resizingElement": null,
@@ -5456,10 +6038,7 @@ exports[`regression tests > drags selected elements from point inside common bou
   "gridModeEnabled": false,
   "gridSize": 20,
   "gridStep": 5,
-  "groupRotationCenter": {
-    "x": 75,
-    "y": 75,
-  },
+  "groupRotationCenter": null,
   "height": 768,
   "hoveredElementIds": {},
   "isBindingEnabled": true,
@@ -5492,6 +6071,7 @@ exports[`regression tests > drags selected elements from point inside common bou
     "type": "selection",
   },
   "previousSelectedElementIds": {
+    "id0": true,
     "id3": true,
   },
   "resizingElement": null,
@@ -5680,28 +6260,26 @@ exports[`regression tests > drags selected elements from point inside common bou
       "updated": {
         "id0": {
           "deleted": {
-            "groupCustomRotationCenter": [
-              15,
-              15,
-            ],
             "version": 4,
+            "x": 25,
+            "y": 25,
           },
           "inserted": {
-            "groupCustomRotationCenter": undefined,
             "version": 3,
+            "x": 0,
+            "y": 0,
           },
         },
         "id3": {
           "deleted": {
-            "groupCustomRotationCenter": [
-              15,
-              15,
-            ],
             "version": 4,
+            "x": 135,
+            "y": 135,
           },
           "inserted": {
-            "groupCustomRotationCenter": undefined,
             "version": 3,
+            "x": 110,
+            "y": 110,
           },
         },
       },
@@ -10784,7 +11362,9 @@ exports[`regression tests > noop interaction after undo shouldn't create history
     "initialized": true,
     "type": "selection",
   },
-  "previousSelectedElementIds": {},
+  "previousSelectedElementIds": {
+    "id0": true,
+  },
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
@@ -10823,7 +11403,7 @@ exports[`regression tests > noop interaction after undo shouldn't create history
 
 exports[`regression tests > noop interaction after undo shouldn't create history entry > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > noop interaction after undo shouldn't create history entry > [end of test] number of renders 1`] = `11`;
+exports[`regression tests > noop interaction after undo shouldn't create history entry > [end of test] number of renders 1`] = `14`;
 
 exports[`regression tests > noop interaction after undo shouldn't create history entry > [end of test] redo stack 1`] = `[]`;
 
@@ -10936,6 +11516,50 @@ exports[`regression tests > noop interaction after undo shouldn't create history
       "updated": {},
     },
     "id": "id8",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id3": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id11",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id3": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id14",
   },
 ]
 `;
@@ -11153,15 +11777,15 @@ exports[`regression tests > shift click on selected element should deselect it o
     "initialized": true,
     "type": "selection",
   },
-  "previousSelectedElementIds": {},
+  "previousSelectedElementIds": {
+    "id0": true,
+  },
   "resizingElement": null,
   "scrollX": 0,
   "scrollY": 0,
   "scrolledOutside": false,
   "searchMatches": null,
-  "selectedElementIds": {
-    "id0": true,
-  },
+  "selectedElementIds": {},
   "selectedElementsAreBeingDragged": false,
   "selectedGroupIds": {},
   "selectedLinearElement": null,
@@ -11192,7 +11816,7 @@ exports[`regression tests > shift click on selected element should deselect it o
 
 exports[`regression tests > shift click on selected element should deselect it on pointer up > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > shift click on selected element should deselect it on pointer up > [end of test] number of renders 1`] = `6`;
+exports[`regression tests > shift click on selected element should deselect it on pointer up > [end of test] number of renders 1`] = `7`;
 
 exports[`regression tests > shift click on selected element should deselect it on pointer up > [end of test] redo stack 1`] = `[]`;
 
@@ -11250,6 +11874,26 @@ exports[`regression tests > shift click on selected element should deselect it o
       "updated": {},
     },
     "id": "id2",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {},
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id0": true,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id5",
   },
 ]
 `;
@@ -11340,6 +11984,7 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
     "type": "selection",
   },
   "previousSelectedElementIds": {
+    "id0": true,
     "id3": true,
   },
   "resizingElement": null,
@@ -11349,6 +11994,7 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
   "searchMatches": null,
   "selectedElementIds": {
     "id0": true,
+    "id3": true,
   },
   "selectedElementsAreBeingDragged": false,
   "selectedGroupIds": {},
@@ -11380,7 +12026,7 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
 
 exports[`regression tests > shift-click to multiselect, then drag > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > shift-click to multiselect, then drag > [end of test] number of renders 1`] = `11`;
+exports[`regression tests > shift-click to multiselect, then drag > [end of test] number of renders 1`] = `13`;
 
 exports[`regression tests > shift-click to multiselect, then drag > [end of test] redo stack 1`] = `[]`;
 
@@ -11519,6 +12165,26 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
   {
     "appState": AppStateDelta {
       "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id3": true,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {},
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {},
+      "updated": {},
+    },
+    "id": "id11",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
         "deleted": {},
         "inserted": {},
       },
@@ -11529,20 +12195,31 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
       "updated": {
         "id0": {
           "deleted": {
-            "customRotationCenter": [
-              30,
-              10,
-            ],
             "version": 4,
+            "x": 20,
+            "y": 20,
           },
           "inserted": {
-            "customRotationCenter": null,
             "version": 3,
+            "x": 10,
+            "y": 10,
+          },
+        },
+        "id3": {
+          "deleted": {
+            "version": 4,
+            "x": 40,
+            "y": 20,
+          },
+          "inserted": {
+            "version": 3,
+            "x": 30,
+            "y": 10,
           },
         },
       },
     },
-    "id": "id12",
+    "id": "id14",
   },
 ]
 `;
